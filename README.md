@@ -12,7 +12,7 @@ This would involve loading multiple dimension elements at once, and then iterati
 Well, that was disappointing.
 Perhaps it's not too surprising given that the blocking involves a lot of extra looping overhead.
 
-```
+```console
 $ ./build/summer
 |               ns/op |                op/s |    err% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------:|:----------
@@ -20,10 +20,10 @@ $ ./build/summer
 |        5,488,333.00 |              182.20 |    2.4% |      0.06 | `blocked`
 ```
 
-Interestingly, if we set the `MULTIPLE_BUFFERS` macro, we start to see the advantage of blocking.
+Interestingly, if we set the `MULTIPLE_RESULTS` macro, we start to see the advantage of blocking.
 With enough result vectors (in this case, 3), the cache misses become more expensive than the looping.
 
-```
+```console
 $ ./build/summer
 |               ns/op |                op/s |    err% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------:|:----------
@@ -32,7 +32,7 @@ $ ./build/summer
 ```
 
 Note that the dense case should already favor the blocked analysis.
-For the sparse case, the cache misses should be fewer, as there is less data that could push the result vector out of the cache;
+For the sparse case, the cache misses should be less frequent, as there is less data that could push the result vector out of the cache after processing a dimension element;
 and the looping overhead is higher relative to the amount of data being processed.
 
 I think we'll just stick to the simple calculation for now.
