@@ -16,14 +16,17 @@ This computes the dense row sum in a running manner for a column-major matrix.
 ```console
 # On Mac M2:
 $ ./build/dense_sum
+Testing a 100000 x 2000 matrix
+
 |               ns/op |                op/s |    err% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------:|:----------
-|        4,334,041.00 |              230.73 |    0.4% |      0.05 | `naive`
-|        5,488,333.00 |              182.20 |    2.4% |      0.06 | `blocked`
+|       45,683,500.00 |               21.89 |    2.3% |      0.50 | `naive`
+|       57,245,625.00 |               17.47 |    0.1% |      0.63 | `blocked`
 
 # On Intel i7:
 $ ./build/dense_sum
 Testing a 100000 x 2000 matrix
+
 |               ns/op |                op/s |    err% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------:|:----------
 |      112,511,774.00 |                8.89 |    0.6% |      1.27 | `naive`
@@ -39,9 +42,19 @@ Now trying Welford's algorithm for the running variances, which involves two res
 This should increase the frequency of cache misses for the naive calculation, favoring the blocked calculation.
 
 ```console
+# On Mac M2:
+$ ./build/dense_var
+Testing a 100000 x 2000 matrix
+
+|               ns/op |                op/s |    err% |     total | benchmark
+|--------------------:|--------------------:|--------:|----------:|:----------
+|       76,770,292.00 |               13.03 |    0.1% |      0.85 | `naive`
+|      109,256,166.00 |                9.15 |    0.2% |      1.20 | `blocked`
+
 # On Intel i7:
 $ ./build/dense_var
 Testing a 100000 x 2000 matrix
+
 |               ns/op |                op/s |    err% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------:|:----------
 |      171,816,541.00 |                5.82 |    0.8% |      1.92 | `naive`
@@ -56,8 +69,19 @@ I'm not sure why it does worse than the sum given that the looping overhead is t
 Trying a sparse sum this time:
 
 ```console
+# On Mac M2:
+$ ./build/sparse_sum
+
+Testing a 50000 x 10000 matrix with a density of 0.1
+
+|               ns/op |                op/s |    err% |     total | benchmark
+|--------------------:|--------------------:|--------:|----------:|:----------
+|       47,595,875.00 |               21.01 |    0.5% |      0.54 | `naive`
+|      299,029,000.00 |                3.34 |    0.1% |      3.31 | `blocked`
+
 # On Intel i7:
-$ ./build/dense_sum
+$ ./build/sparse_sum
+
 Testing a 50000 x 10000 matrix with a density of 0.1
 |               ns/op |                op/s |    err% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------:|:----------
