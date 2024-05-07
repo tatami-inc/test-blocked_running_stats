@@ -7,8 +7,6 @@ project(summation
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(summer main.cpp)
-
 include(FetchContent)
 
 FetchContent_Declare(
@@ -26,4 +24,12 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cli11)
 FetchContent_MakeAvailable(nanobench)
 
-target_link_libraries(summer nanobench::nanobench CLI11::CLI11)
+add_executable(dense_sum dense_sum.cpp)
+target_link_libraries(dense_sum nanobench::nanobench CLI11::CLI11)
+
+add_executable(dense_var dense_var.cpp)
+target_link_libraries(dense_var nanobench::nanobench CLI11::CLI11)
+
+add_executable(sparse_sum sparse_sum.cpp)
+target_link_libraries(sparse_sum nanobench::nanobench CLI11::CLI11)
+

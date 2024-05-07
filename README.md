@@ -9,33 +9,67 @@ This would involve loading multiple dimension elements at once, and then iterati
 
 ## Results
 
-Well, that was disappointing.
-Perhaps it's not too surprising given that the blocking involves a lot of extra looping overhead.
+### `dense_sum`
+
+This computes the dense row sum in a running manner for a column-major matrix.
 
 ```console
-$ ./build/summer
+# On Mac M2:
+$ ./build/dense_sum
 |               ns/op |                op/s |    err% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------:|:----------
 |        4,334,041.00 |              230.73 |    0.4% |      0.05 | `naive`
 |        5,488,333.00 |              182.20 |    2.4% |      0.06 | `blocked`
-```
 
-Interestingly, if we set the `MULTIPLE_RESULTS` macro, we start to see the advantage of blocking.
-With enough result vectors (in this case, 3), the cache misses become more expensive than the looping.
-
-```console
-$ ./build/summer
+# On Intel i7:
+$ ./build/dense_sum
+Testing a 100000 x 2000 matrix
 |               ns/op |                op/s |    err% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------:|:----------
-|       10,185,250.00 |               98.18 |    0.4% |      0.11 | `naive`
-|        8,963,125.00 |              111.57 |    1.1% |      0.10 | `blocked`
+|      112,511,774.00 |                8.89 |    0.6% |      1.27 | `naive`
+|      105,723,480.00 |                9.46 |    0.3% |      1.20 | `blocked`
 ```
 
-Note that the dense case should already favor the blocked analysis.
-For the sparse case, the cache misses should be less frequent, as there is less data that could push the result vector out of the cache after processing a dimension element;
-and the looping overhead is higher relative to the amount of data being processed.
+Well, that was disappointing.
+Perhaps it's not too surprising given that the blocking involves a lot of extra looping overhead.
 
-I think we'll just stick to the simple calculation for now.
+### `dense_var`
+
+Now trying Welford's algorithm for the running variances, which involves two result vectors.
+This should increase the frequency of cache misses for the naive calculation, favoring the blocked calculation.
+
+```console
+# On Intel i7:
+$ ./build/dense_var
+Testing a 100000 x 2000 matrix
+|               ns/op |                op/s |    err% |     total | benchmark
+|--------------------:|--------------------:|--------:|----------:|:----------
+|      171,816,541.00 |                5.82 |    0.8% |      1.92 | `naive`
+|      182,211,173.00 |                5.49 |    0.7% |      2.02 | `blocked`
+```
+
+Doesn't seem to be the case, unfortunately.
+I'm not sure why it does worse than the sum given that the looping overhead is the same.
+
+### `sparse_sum`
+
+Trying a sparse sum this time:
+
+```console
+# On Intel i7:
+$ ./build/dense_sum
+Testing a 50000 x 10000 matrix with a density of 0.1
+|               ns/op |                op/s |    err% |     total | benchmark
+|--------------------:|--------------------:|--------:|----------:|:----------
+|       91,873,749.00 |               10.88 |    9.8% |      1.00 | `naive`
+|      301,647,839.00 |                3.32 |    1.0% |      3.33 | `blocked`
+```
+
+At least this one is easy to explain.
+For sparse data, the cache misses should be less frequent, as there is less data that could push the result vector out of the cache after processing a dimension element.
+On the other hand, the looping overhead is higher relative to the amount of data being processed.
+
+**tl;dr** I think we'll just stick to the simple calculation for now.
 
 ## Build instructions
 
